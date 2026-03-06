@@ -2,6 +2,11 @@
 local_tools/*.json
 local_tools/raw_template.json
 
+/data/*
+!/data/
+!/data/*.enc
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
