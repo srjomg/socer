@@ -1,9 +1,16 @@
 import argparse
 import base64
 
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from Crypto.Cipher import AES
+from Crypto.Hash import HMAC, SHA256
+from Crypto.Random import get_random_bytes
+from Crypto.Protocol.KDF import PBKDF2
+
+
+SALT_SIZE = 16
+TAG_SIZE = 16
+NONCE_SIZE = 12
+ITERATIONS = 100000
 
 
 def read_from_file(path: str) -> bytes:
@@ -16,40 +23,38 @@ def write_to_file(path: str, content: bytes):
         file.write(content)
 
 
-def get_fernet(password: bytes, salt: bytes = b"") -> Fernet:
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=1_200_000,
-    )
-    key = base64.urlsafe_b64encode(kdf.derive(password))
-
-    return Fernet(key)
-
-
-def encrypt_content(content: bytes, password: bytes, salt: bytes = b"") -> bytes:
-    f = get_fernet(password, salt)
-
-    return f.encrypt(content)
-
-
-def decrypt_content(content: bytes, password: bytes, salt: bytes = b"") -> bytes:
-    f = get_fernet(password, salt)
-
-    return f.decrypt(content)
-
-
 def encrypt_to_file(src_path: str, dst_path: str, password: bytes):
-    src_content = read_from_file(src_path)
-    dst_content = encrypt_content(src_content, password)
-    write_to_file(dst_path, dst_content)
+    salt = get_random_bytes(SALT_SIZE)
+    key = PBKDF2(password, salt, 32, count=100000)
+
+    plain_data = read_from_file(src_path)
+
+    cipher = AES.new(key, AES.MODE_GCM, nonce=get_random_bytes(NONCE_SIZE))
+    ciphertext, tag = cipher.encrypt_and_digest(plain_data)
+
+    with open(dst_path, "wb") as f:
+        f.write(salt)
+        f.write(tag)
+        f.write(cipher.nonce)
+        f.write(ciphertext)
 
 
 def decrypt_to_file(src_path: str, dst_path: str, password: bytes):
-    src_content = read_from_file(src_path)
-    dst_content = decrypt_content(src_content, password)
-    write_to_file(dst_path, dst_content)
+    with open(src_path, "rb") as f:
+        salt = f.read(SALT_SIZE)
+        tag = f.read(TAG_SIZE)
+        nonce = f.read(NONCE_SIZE)
+        ciphertext = f.read()
+
+    key = PBKDF2(password, salt, 32, count=ITERATIONS)
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    try:
+        message = cipher.decrypt_and_verify(ciphertext, tag)
+    except ValueError:
+        print("The message was modified!")
+        exit()
+    
+    write_to_file(dst_path, message)
 
 
 def get_args():
