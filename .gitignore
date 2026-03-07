@@ -5,6 +5,7 @@ local_data/*.json
 !/data/
 !/data/*.enc
 
+secret/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
