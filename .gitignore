@@ -1,6 +1,6 @@
 # Project-related
-local_tools/*.json
-local_tools/raw_template.json
+local_data/*.json
+local_data/raw_template.json
 
 /data/*
 !/data/
