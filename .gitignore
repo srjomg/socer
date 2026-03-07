@@ -1,6 +1,6 @@
 # Project-related
 local_data/*.json
-local_data/raw_template.json
+local_data/raw_*.json
 
 /data/*
 !/data/
