@@ -2,100 +2,128 @@
 <html>
 <head>
     <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Test</title>
-    <style>
-        /* html, body {
-            margin: 0;
-        } */
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-        #cy {
-            width: 100%;
-            height: 600px;
-            display: block;
-            border-color: black;
-            border-radius: 5px;
-        }
-
-        #panel {
-            width: 100%;
-        }
-        #panel form {
-            display: flex;
-            flex-direction: column;
-            width: fit-content;
-        }
-        #panel form input {
-            margin-bottom: 20px;
-        }
-    </style>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <!-- <link rel='stylesheet' type='text/css' media='screen' href='main.css'> -->
+
+    <title>SOC Toolbox</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="./static/styles/main.css">
+
     <script src='./static/js/vendor/cytoscape.min.js'></script>
+
+    <script src='./static/js/vendor/dagre.min.js'></script>
+    <script src='./static/js/vendor/cytoscape-dagre.js'></script>
+
+    <script src='./static/js/vendor/layout-base.js'></script>
+    <script src='./static/js/vendor/cose-base.js'></script>
+    <script src='./static/js/vendor/cytoscape-fcose.js'></script>
+
+    <script src='./static/js/vendor/papaparse.min.js'></script>
+
+    <script src="./static/js/graphHelpers.js"></script>
 </head>
-<body>
-    <div id="cy"></div>
-    <div id="panel">
-        <form>
-            <label for="file">File</label>
-            <input type="file" name="file" id="file" accept="text/csv" required>
-            <label for="separator">Separator</label>
-            <input type="text" name="separator" id="separator" value="," required>
-            <label for="pid_column_name">PID Column Name</label>
-            <input type="text" name="pid_column_name" id="pid_column_name" value="object.process.id" required>
-            <label for="pid_column_name">PPID Column Name</label>
-            <input type="text" name="ppid_column_name" id="ppid_column_name" value="object.process.parent.id" required>
+<body class="has-background-light">
+    <!-- Навигация -->
+    <nav class="navbar is-dark">
+        <div class="navbar-brand">
+            <a class="navbar-item font-weight-bold">SOC TOOLKIT</a>
+        </div>
+    </nav>
 
-            <input type="submit" name="submit" id="submit">
-        </form>
-    </div>
-    <script>
-        var cy = cytoscape({
+    <!-- Секция для построения графа -->
+    <section class="section">
 
-            container: document.getElementById('cy'), // container to render in
+        <div class="container is-fluid">
+            <!-- Контейнер для кнопок управления -->
+            <div class="field is-grouped is-grouped-multiline">
+                <!-- Кнопка загрузки -->
+                <div class="control">
+                    <div class="file has-name is-primary">
+                        <label class="file-label">
+                            <input class="file-input" type="file" id="file" accept=".csv">
+                            <span class="file-cta">Загрузить CSV</span>
+                        </label>
+                    </div>
+                </div>
 
-            elements: [ // list of graph elements to start with
-                { // node a
-                data: { id: 'a' }
-                },
-                { // node b
-                data: { id: 'b' }
-                },
-                { // edge ab
-                data: { id: 'ab', source: 'a', target: 'b' }
-                }
-            ],
+                <!-- Кнопка построения -->
+                <div class="control">
+                    <button onclick="buildGraph()" class="button is-link">Построить дерево</button>
+                </div>
 
-            style: [ // the stylesheet for the graph
-                {
-                selector: 'node',
-                style: {
-                    'background-color': '#666',
-                    'label': 'data(id)'
-                }
-                },
+                <div class="select control">
+                    <select id="layout-select">
+                        <option value="dagre">Hierarchical (Dagre)</option>
+                        <option value="fcose">Organic (fCoSe)</option>
+                    </select>
+                </div>
 
-                {
-                selector: 'edge',
-                style: {
-                    'width': 3,
-                    'line-color': '#ccc',
-                    'target-arrow-color': '#ccc',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier'
-                }
-                }
-            ],
+                <!-- Кнопка настроек -->
+                <div class="control">
+                    <button onclick="toggleSettings()" class="button is-light">
+                        <span>Настройки</span>
+                        <span class="icon is-small">⚙️</span>
+                    </button>
+                </div>
+            </div>
 
-            layout: {
-                name: 'grid',
-                rows: 1
-            }
+            <!-- Блок продвинутых настроек (скрыт) -->
+            <div id="advanced-settings" class="box is-hidden mt-3">
+                <h3 class="title is-6">Advanced Parser Settings</h3>
+                <div class="columns is-multiline">
+                    <div class="column is-3">
+                        <label class="label is-small">PID Column</label>
+                        <input class="input is-small" type="text" id="pid_col" value="object.process.id">
+                    </div>
+                    <div class="column is-3">
+                        <label class="label is-small">PPID Column</label>
+                        <input class="input is-small" type="text" id="ppid_col" value="object.process.parent.id">
+                    </div>
+                    <div class="column is-3">
+                        <label class="label is-small">Process Fullpath Column</label>
+                        <input class="input is-small" type="text" id="pfullpath_col" value="object.process.fullpath">
+                    </div>
+                    <div class="column is-3">
+                        <label class="label is-small">Parent Process Fullpath Column</label>
+                        <input class="input is-small" type="text" id="ppfullpath_col" value="object.process.parent.fullpath">
+                    </div>
+                    <div class="column is-3">
+                        <label class="label is-small">Separator</label>
+                        <input class="input is-small" type="text" id="separator" value=",">
+                    </div>
+                </div>
+            </div>
 
-        });
-    </script>
+            <!-- Две колонки: граф и данные -->
+            <div class="columns is-gapless">
+
+                <!-- Первая колонка с графом -->
+                <div class="column is-8">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">Process Visualizer</p>
+                    </header>
+                    <div class="card-content p-0">
+                        <div id="cy"></div> <!-- Cytoscape -->
+                    </div>
+                </div>
+                </div>
+
+                <!-- Вторая колонка с данными -->
+                <div class="column is-4">
+                <div class="card details-container">
+                    <header class="card-header"><p class="card-header-title">Details</p></header>
+                    <div class="card-content">
+                        <div id="details-content">
+                            <p class="has-text-grey">Выберите узел на графе</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="./static/js/initGraph.js"></script>
 </body>
 </html>
