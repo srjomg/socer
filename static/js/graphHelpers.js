@@ -124,10 +124,17 @@ function runLayout() {
     cy.layout(options).run();
 }
 
-function buildGraph() {
+function buildGraph(test = false) {
     const settings = parseSettings();
 
-    parseCsvFromFile().then(data => {
+    let d;
+    if (!test) {
+        d = parseCsvFromFile();
+    } else {
+        d = fetch("./static/test.csv").then(response => response.text());
+    }
+
+    d.then(data => {
         if (!data || !data.data) return;
 
         const rows = data.data;
