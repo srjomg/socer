@@ -131,7 +131,22 @@ function buildGraph(test = false) {
     if (!test) {
         d = parseCsvFromFile();
     } else {
-        d = fetch("./static/test.csv").then(response => response.text());
+        d = fetch("./static/test.csv")
+            .then(response => {
+                if (!response.ok) throw new Error("Файл не найден");
+                return response.text();
+            })
+            .then(csvText => {
+                // Превращаем текст в такой же объект, который дает Papa.parse
+                return Papa.parse(csvText, {
+                    delimiter: settings.separator,
+                    skipEmptyLines: true
+                });
+            })
+            .catch(err => {
+                console.error("Ошибка загрузки теста:", err);
+                return null;
+            });
     }
 
     d.then(data => {

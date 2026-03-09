@@ -31,7 +31,7 @@ var cy = cytoscape({
         style: {
             'width': 2,
             'line-color': '#ccc',
-            'curve-style': 'taxi', // Попробуй taxi вместо bezier
+            'curve-style': 'taxi',
             'taxi-direction': 'vertical',
             'target-arrow-shape': 'triangle',
             'target-arrow-color': '#ccc',
