@@ -1,8 +1,4 @@
-function zip(arrays) {
-    return arrays[0].map(function(_,i){
-        return arrays.map(function(array){return array[i]})
-    });
-}
+import { readFileFromInput, zip, interpolateColor, getShortName } from "./specials.js";
 
 const CONFIG = {
     columns: {
@@ -18,11 +14,6 @@ const CONFIG = {
     endColor: "#0074D9"
 };
 
-function toggleSettings() {
-    const settingsBlock = document.getElementById("advanced-settings");
-    settingsBlock.classList.toggle("is-hidden");
-}
-
 
 function parseSettings() {
     return {
@@ -35,51 +26,18 @@ function parseSettings() {
     };
 }
 
-function parseCsvFromFile() {
+async function parseCsvFromFile() {
     const settings = parseSettings();
 
-    return new Promise((resolve) => {
-        const input = document.getElementById("file");
-        if (input.files.length > 0) {
-            const reader = new FileReader();
-
-            reader.onload = function(event) {
-                const content = event.target.result;
-                let result = Papa.parse(content, {
-                    "delimiter": settings.separator
-                });
-                resolve(result);
-            };
-
-            reader.readAsText(input.files[0]);
-        } else {
-            resolve(null);
-        }
+    const input = document.getElementById("file");
+    const content = await readFileFromInput(input);
+    let result = Papa.parse(content, {
+        "delimiter": settings.separator
     });
+
+    return result
 }
 
-function parseTestCsv() {
-    return fetch("./static/test.csv")
-        .then(response => {
-            if (!response.ok) throw new Error("Файл не найден");
-            return response.text();
-        })
-        .then(csvText => {
-            return Papa.parse(csvText, {
-                delimiter: settings.separator,
-                skipEmptyLines: true
-            });
-        })
-        .catch(err => {
-            console.error("Ошибка загрузки теста:", err);
-            return null;
-        });
-}
-
-function getShortName(fullpath, pid) {
-    if (!fullpath) return pid;
-    return fullpath.split("\\").pop().split("/").pop();
-}
 
 function lineToObject(header, line) {
     return Object.fromEntries(zip([
@@ -88,7 +46,7 @@ function lineToObject(header, line) {
     ]));
 }
 
-function rawToBeauty(raw) {
+export function rawToBeauty(raw) {
     let html = "<div class='content is-small'>";
 
     for ( let [key, val] of Object.entries(raw) ) {
@@ -106,53 +64,10 @@ function rawToBeauty(raw) {
     return html;
 }
 
-function runLayout() {
-    const layoutName = document.getElementById("layout-select").value;
-    let options = { name: layoutName };
-
-    if (layoutName === "dagre") {
-        options = {
-            ...options,
-            rankDir: "TB",
-            rankSep: 50,
-            nodeSep: 50,
-            animate: true,
-            animationDuration: 500
-        };
-    } else if (layoutName === "fcose") {
-        options = {
-            ...options,
-            quality: 'proof',
-            animate: true,
-            animationDuration: 1000,
-            fit: true,
-            padding: 30,
-            gravity: 0.2,
-            nodeRepulsion: 8000,
-            idealEdgeLength: 200,
-            edgeElasticity: 0.45,
-            nestingFactor: 0.1,
-            nodeSeparation: 100,
-            tile: true,
-            tilingPaddingVertical: 40,
-            tilingPaddingHorizontal: 40,
-        };
-    }
-
-    cy.layout(options).run();
-}
-
-function buildGraph(test = false) {
+export function buildGraph(cy) {
     const settings = parseSettings();
 
-    let d;
-    if (!test) {
-        d = parseCsvFromFile();
-    } else {
-        d = parseTestCsv();
-    }
-
-    d.then(data => {
+    parseCsvFromFile().then(data => {
         if (!data || !data.data) return;
 
         const rows = data.data;
@@ -227,29 +142,14 @@ function buildGraph(test = false) {
         }
 
         cy.add(elements);
-        runLayout();
+        cy.layout({
+            name: "dagre",
+            rankDir: "TB",
+            rankSep: 50,
+            nodeSep: 50,
+            animate: true,
+            animationDuration: 500
+        }).run();
         cy.fit();
     });
-}
-
-function interpolateColor(color1, color2, factor) {
-    if (arguments.length < 3) factor = 0.5;
-    const hex = x => {
-        const s = x.toString(16);
-        return s.length === 1 ? "0" + s : s;
-    }
-
-    const r1 = parseInt(color1.substring(1, 3), 16);
-    const g1 = parseInt(color1.substring(3, 5), 16);
-    const b1 = parseInt(color1.substring(5, 7), 16);
-
-    const r2 = parseInt(color2.substring(1, 3), 16);
-    const g2 = parseInt(color2.substring(3, 5), 16);
-    const b2 = parseInt(color2.substring(5, 7), 16);
-
-    const r = Math.round(r1 + factor * (r2 - r1));
-    const g = Math.round(g1 + factor * (g2 - g1));
-    const b = Math.round(b1 + factor * (b2 - b1));
-
-    return "#" + hex(r) + hex(g) + hex(b);
 }
