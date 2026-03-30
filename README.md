@@ -1,4 +1,5 @@
 # socer - это...
+socer - это инструмент, предоставляющий функционал для удобного обогащения и расследования инцидентов
 # todo
 - Process Journey
     - Переписать логику `buildGraph()` и файла `graph-helpers.js` в целом
@@ -13,6 +14,7 @@
 - Тулбокс (?multis/multic/multitool)
     - Автоопределение объекта (IPv4, IPv6, MAC, domain, URL, SSL, Email, Hash, Phone, и тд)
         - Учесть возможность вставки зашумленных значений
+    - Получение хеша по файлу (опять же все локально)
     - Предоставление для объекта ресурсов для анализа, в том числе с подстановками, где это возможно
         - Например, для URL: `https://web.archive.org/web/{url}`
         - Hash для VirusTotal: `https://www.virustotal.com/gui/file/{hash}`
