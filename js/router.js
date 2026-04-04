@@ -1,4 +1,5 @@
 import { ProcessJourneyPage } from "./pages/process-journey.js";
+import { ListikPage } from "./pages/listik.js";
 import { _debug } from "./dev.js";
 
 function handleRoute(route) {
@@ -9,7 +10,7 @@ function handleRoute(route) {
         ProcessJourneyPage.init();
     }
     else if ( ["listik"].includes(route) ) {
-        app.innerHTML = "<p>Listik</p>"
+        app.innerHTML = ListikPage.render();
     }
     else if (route === "") {
         app.innerHTML = "<p>Main page</p>"
