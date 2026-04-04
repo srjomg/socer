@@ -63,7 +63,7 @@ function detectHashMD5(str) {
 
 function normalizeURL(str) {
     if ( !str.includes("://") && str.includes("/") ) {
-        str += "http://";
+        str = "http://" + str;
     }
 
     return str;
