@@ -10,8 +10,8 @@ const CONFIG = {
         time: "time"
     },
     separator: ",",
-    startColor: "#FF4136",
-    endColor: "#0074D9"
+    startColor: "#0074D9",
+    endColor: "#FF4136"
 };
 
 
@@ -32,7 +32,10 @@ async function parseCsvFromFile() {
     const input = document.getElementById("file");
     const content = await readFileFromInput(input);
     let result = Papa.parse(content, {
-        "delimiter": settings.separator
+        delimiter: settings.separator,
+        quoteChar: "\"",
+        skipEmptyLine: true,
+        dynamicTyping: false
     });
 
     return result
@@ -70,6 +73,7 @@ export function buildGraph(cy) {
     parseCsvFromFile().then(data => {
         if (!data || !data.data) return;
 
+        console.log(data);
         const rows = data.data;
 
         cy.elements().remove();
@@ -88,6 +92,7 @@ export function buildGraph(cy) {
 
         for (let i = 1; i < rows.length; ++i) {
             const raw = lineToObject(rows[0], rows[i]);
+            // console.log(raw);
 
             const pid = raw[settings.pid];
             const pfullpath = raw[settings.pfullpath];
@@ -145,8 +150,8 @@ export function buildGraph(cy) {
         cy.layout({
             name: "dagre",
             rankDir: "TB",
-            rankSep: 50,
-            nodeSep: 50,
+            rankSep: 100,
+            nodeSep: 100,
             animate: true,
             animationDuration: 500
         }).run();

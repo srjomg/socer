@@ -1,15 +1,4 @@
-const indicatorValidators = {
-    ip: {
-        // https://www.ditig.com/validating-ipv4-and-ipv6-addresses-with-regexp
-        v4: /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/,
-        v6: /^((?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,7}:|:(?::[0-9A-Fa-f]{1,4}){1,7}|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:(?:(?::[0-9A-Fa-f]{1,4}){1,6})|:(?:(?::[0-9A-Fa-f]{1,4}){1,6}))$/
-    },
-    hash: {
-        md5: /^[0-9a-f]{32}$/i,
-        sha256:  /^[a-f0-9]{64}$/i
-    },
-    domain: /^[a-z0-9][a-z0-9-]{0,61}[a-z0-9](?:\.[a-z]{2,})+$/i
-}
+const HEX_REGEX = /[0-9a-f]{4}/i;
 
 function detectIPv4(str) {
     const parts = str.split(".");
@@ -20,8 +9,8 @@ function detectIPv4(str) {
         if (part.length < 1 || part.length > 3) return false
         // в части с не единичной длиной не может быть ведущего нуля (127.0.01.1)
         if (part.length != 1 && number.startsWith("0")) return false;
-
-        if ( !/^[0-9]{1-3}$/.test(number) ) return false;
+        // в части должны присутствовать только числовые символы
+        if ( !/^[0-9]+$/.test(number) ) return false;
         // числовые интерпретации части должны быть в интервале [0, 255] (127.0.0.999)
         const n = Number(number);
         if (n < 0 || n > 255) return false;
@@ -31,12 +20,25 @@ function detectIPv4(str) {
 }
 
 function detectIPv6(str) {
-    const hexRegex = /[0-9a-f]{4}/i;
     const hexades = str.split(":");
     if (hexades.length < 8) return false;
     for (let hex of hexades) {
-        if ( !hexRegex.test(hex) ) return false
+        if ( !HEX_REGEX.test(hex) ) return false
     }
+
+    return true;
+}
+
+function detectHashSHA256(str) {
+    if (str.length != 64) return false;
+    if ( !HEX_REGEX.test(str) ) return false;
+
+    return true;
+}
+
+function detectHashMD5(str) {
+    if (str.length != 32) return false;
+    if ( !HEX_REGEX.test(str) ) return false;
 
     return true;
 }
@@ -50,7 +52,7 @@ function normalizeURL(str) {
 }
 
 function detectURL(str) {
-    str = normalizeUrl(str);
+    str = normalizeURL(str);
 
     try {
         new URL(str);
@@ -59,4 +61,30 @@ function detectURL(str) {
     }
 
     return true
+}
+
+function detectDomain(str) {
+    const allowedSymbolsRegex = /^[a-z0-9\-]+$/i;
+    const parts = str.split(".");
+    if (parts.length < 2) return false;
+
+    for (let part of parts) {
+        if (part.length < 1) return false;
+        if ( !allowedSymbolsRegex.test(part) ) return false;
+        if ( part.startsWith("-") || part.endsWith("-") ) return false;
+        
+        let interParts = part.split("xn--");
+        if (interParts.length > 2) return false;
+        if (interParts.length === 2 && interParts[0] !== "") return false;
+    }
+    
+    return true;
+}
+
+function refang(str) {
+    return str.replace(/\[at\]/, "@")
+        .replace("hxxp://", "http://")
+        .replace("hxxps://", "https://")
+        .replace(/\[[\.]\]/, "")
+        .replace(/\([\.]\)/, "");
 }

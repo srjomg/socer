@@ -8,8 +8,8 @@ function handleRoute(route) {
         app.innerHTML = ProcessJourneyPage.render();
         ProcessJourneyPage.init();
     }
-    else if ( ["toolbox", "tb"].includes(route) ) {
-        app.innerHTML = "<p>Toolbox</p>"
+    else if ( ["listik"].includes(route) ) {
+        app.innerHTML = "<p>Listik</p>"
     }
     else if (route === "") {
         app.innerHTML = "<p>Main page</p>"
