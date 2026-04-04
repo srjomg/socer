@@ -11,6 +11,7 @@ function handleRoute(route) {
     }
     else if ( ["listik"].includes(route) ) {
         app.innerHTML = ListikPage.render();
+        ListikPage.init();
     }
     else if (route === "") {
         app.innerHTML = "<p>Main page</p>"

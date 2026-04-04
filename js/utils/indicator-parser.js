@@ -1,4 +1,22 @@
 const HEX_REGEX = /[0-9a-f]{4}/i;
+const DETECTORS = {
+    "ip": detectIPv4,
+    "url": detectURL,
+    "domain": detectDomain,
+    "hash": detectHashSHA256
+};
+
+export function detectEntity(str) {
+    let cleanStr = refang(str.trim());
+
+    for ( let [entityType, detector] of Object.entries(DETECTORS) ) {
+        if ( detector(cleanStr) === true) {
+            return entityType;
+        }
+    }
+
+    return undefined;
+}
 
 function detectIPv4(str) {
     const parts = str.split(".");
@@ -8,11 +26,11 @@ function detectIPv4(str) {
         // часть должна состоять из 1-3 цифровых символов (127.0..1, 127.0.0.1111)
         if (part.length < 1 || part.length > 3) return false
         // в части с не единичной длиной не может быть ведущего нуля (127.0.01.1)
-        if (part.length != 1 && number.startsWith("0")) return false;
+        if (part.length != 1 && part.startsWith("0")) return false;
         // в части должны присутствовать только числовые символы
-        if ( !/^[0-9]+$/.test(number) ) return false;
+        if ( !/^[0-9]+$/.test(part) ) return false;
         // числовые интерпретации части должны быть в интервале [0, 255] (127.0.0.999)
-        const n = Number(number);
+        const n = Number(part);
         if (n < 0 || n > 255) return false;
     }
 
@@ -44,7 +62,7 @@ function detectHashMD5(str) {
 }
 
 function normalizeURL(str) {
-    if ( !str.contains("://") && str.contains("/") ) {
+    if ( !str.includes("://") && str.includes("/") ) {
         str += "http://";
     }
 
