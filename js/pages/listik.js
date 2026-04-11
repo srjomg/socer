@@ -1,38 +1,68 @@
-import { RESOURCES, ENTITY_TO_RESOURCE } from "../config.js";
+import { RESOURCES, ENTITY_TO_RESOURCES } from "../config.js";
 import { detectEntity } from "../utils/indicator-parser.js";
 
+function constructUrl(baseUrl, endpoint, entity, preprocess, symbol = "<?>") {
+    (typeof preprocess === "function") ? entity = preprocess(entity) : false;
+
+    return baseUrl + endpoint.replace(symbol, entity);
+}
+
 function constructResources(entityType, entity) {
-    let listikResult = document.getElementById("listik-result")
+    let listikResult = document.getElementById("listik-result-resources")
     listikResult.replaceChildren();
 
-    for (let resource of ENTITY_TO_RESOURCE[entityType]) {
+    // ```
+    // <div class="columns is-centered">
+    //     <div class="column is-10">
+    //         <h2 class="title">{title} <a href="{lookupUrl}">[LOOKUP ↗]</a></h2>
+    //         <p>Группа: {group}</p>
+    //         <p>Принимает: {accepts}</p>
+    //         <p>{description}</p>
+    //     </div>
+    // </div>
+    // ```
+    // куда можно что-то внедрить - в lookupUrl
+    for (let resource of ENTITY_TO_RESOURCES[entityType]) {
+        console.log(resource);
         let resourceInfo = RESOURCES[resource];
+        
+        let group = resourceInfo.group;
+        let accepts = resourceInfo.accepts.join(", ");
 
-        const divColumns = document.createElement("div");
-        divColumns.classList = "columns is-centered";
+        let tmp = document.createElement("div");
+        tmp.innerHTML = `
+            <div class="columns is-centered">
+                <div class="column is-10">
+                    <h2 class="title"><span>${resourceInfo.title}</span></h2>
+                    <p>Группа: ${group}</p>
+                    <p>Принимает: ${accepts}</p>
+                    <p>${resourceInfo.description}</p>
+                </div>
+            </div>
+        `;
 
-        const divColumn = document.createElement("div");
-        divColumn.classList = "column is-10";
+        if (resourceInfo["lookups"] && resourceInfo["lookups"][entityType]) {
+            let lookupUrl = constructUrl(
+                resourceInfo.baseUrl,
+                resourceInfo.lookups[entityType].endpoint,
+                entity,
+                resourceInfo.lookups[entityType].preprocess
+            );
+            // <a href="${lookupUrl}"></a>
+            let space = document.createElement("span");
+            space.textContent = " ";
 
-        const h2Title = document.createElement("h2");
-        h2Title.textContent = resourceInfo["title"];
-        h2Title.classList = "title"
+            let link = document.createElement("a");
+            link.href = lookupUrl;
+            link.target = "_blank";
+            link.textContent = "[LOOKUP ↗]";
 
-        const pDescription = document.createElement("p");
-        pDescription.textContent = resourceInfo["description"];
+            tmp.querySelector("h2").appendChild(space);
+            tmp.querySelector("h2").appendChild(link);
+        }
+        
 
-        const aLink = document.createElement("a");
-        aLink.href = (resourceInfo["baseUrl"] + resourceInfo["lookups"][entityType]).replace("<?>", entity);
-        aLink.textContent = `${resource} ${entityType} analysis`
-
-        // divContainer.appendChild(divColumns);
-        divColumns.appendChild(divColumn);
-
-        divColumn.appendChild(h2Title);
-        divColumn.appendChild(pDescription)
-        divColumn.appendChild(aLink);
-
-        listikResult.appendChild(divColumns);
+        listikResult.appendChild(tmp.children[0]);
     }
 
 
@@ -71,7 +101,25 @@ export const ListikPage = {
                 </div>
             </div>
             <hr>
-            <div id="listik-result" class="container">
+            <div class="container">
+                <div class="columns">
+                    <!--<div class="column container is-2">
+                        <p>VirusTotal</p>
+                        <p>ThreatFox</p>
+                        <p>AbuseIPDB</p>
+                    </div>-->
+                    <div id="listik-result" class="column container">
+                        <div id="listik-result-groups" class="tabs is-toggle is-right">
+                            <ul>
+                                <li><a><span>Group1</span></a></li>
+                                <li><a><span>Group2</span></a></li>
+                                <li><a><span>Group3</span></a></li>
+                            </ul>
+                        </div>
+                        <div id="listik-result-resources"></div>
+                    </div>
+                </div>
+            </div>
             </div>
         </section>
     `,

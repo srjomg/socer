@@ -1,9 +1,11 @@
 const HEX_REGEX = /[0-9a-f]{4}/i;
 const DETECTORS = {
-    "ip": detectIPv4,
+    "ipv4": detectIPv4,
+    "ipv6": detectIPv6,
     "url": detectURL,
     "domain": detectDomain,
-    "hash": detectHashSHA256
+    "hash_sha256": detectHashSHA256,
+    "hash_md5": detectHashMD5
 };
 
 export function detectEntity(str) {
