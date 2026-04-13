@@ -77,7 +77,10 @@ export const RESOURCES = {
             "hash_md5": { "endpoint": "/<?>" },
             "hash_sha256": { "endpoint": "/<?>" },
             "domain": { "endpoint": "/<?>" },
-            "url": { "endpoint": "/<?>" }
+            "url": { 
+                "endpoint": "/<?>",
+                "preprocessor": encodeURIComponent
+            }
         }
     },
     "abuseipdb": {
