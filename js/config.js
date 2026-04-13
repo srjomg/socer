@@ -79,7 +79,7 @@ export const RESOURCES = {
             "domain": { "endpoint": "/<?>" },
             "url": { 
                 "endpoint": "/<?>",
-                "preprocessor": encodeURIComponent
+                "preprocess": encodeURIComponent
             }
         }
     },
