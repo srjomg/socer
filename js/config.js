@@ -65,6 +65,21 @@ export const RESOURCES = {
             "authRequired": false,
         }
     },
+    "kasperskyopentip": {
+        "title": "Kaspersky OpenTip",
+        "group": "reputation",
+        "description": "Бесплатный онлайн‑портал от «Лаборатории Касперского» для анализа киберугроз.",
+        "accepts": ["ipv4", "ipv6", "hash_md5", "hash_sha256", "url", "domain"],
+        "baseUrl": "https://opentip.kaspersky.com",
+        "lookups": {
+            "ipv4": { "endpoint": "/<?>" },
+            "ipv6": { "endpoint": "/<?>" },
+            "hash_md5": { "endpoint": "/<?>" },
+            "hash_sha256": { "endpoint": "/<?>" },
+            "domain": { "endpoint": "/<?>" },
+            "url": { "endpoint": "/<?>" }
+        }
+    },
     "abuseipdb": {
         "title": "AbuseIPDB",
         "group": "reputation",
@@ -75,6 +90,18 @@ export const RESOURCES = {
             "ipv4": { "endpoint": "/check/<?>" },
             "ipv6": { "endpoint": "/check/<?>" },
             "domain": { "endpoint": "/check/<?>" }
+        }
+    },
+    "hebgptoolkit": {
+        "title": "Hurricane Electric BGP Toolkit",
+        "group": "infrastructure",
+        "description": "Набор инструментов и утилит для анализа, устранения неполадок и управления аспектами, связанными с протоколом BGP.",
+        "accepts": ["ipv4", "ipv6", "domain"],
+        "baseUrl": "https://bgp.he.net",
+        "lookups": {
+            "ipv4": { "endpoint": "/ip/<?>" },
+            "ipv6": { "endpoint": "/ip/<?>" }, /*????*/
+            "domain": { "endpoint": "/dns/<?>" }
         }
     },
     "shodan": {
@@ -114,6 +141,38 @@ export const RESOURCES = {
             "url": { "endpoint": "/<?>" }
         }
     },
+    "crtsh": {
+        "title": "crt.sh",
+        "group": "infrastructure",
+        "description": "Веб-инструмент для поиска и анализа SSL/TLS-сертификатов, основанный на логах Certificate Transparency.",
+        "accepts": ["domain", "query"],
+        "baseUrl": "https://crt.sh",
+        "lookups": { 
+            "domain": { "endpoint": "/?q=<?>" },
+            "query": { "endpoint": "/?q=<?>" }
+        }
+    },
+    "dnsdumpster": {
+        "title": "DNSDumpster",
+        "group": "infrastructure",
+        "description": "Онлайн-инструмент для DNS-разведки.",
+        "accepts": ["domain"],
+        "baseUrl": "https://dnsdumpster.com"
+    },
+    "otxalienvault": {
+        "title": "AlienVault OTX",
+        "group": "reputation",
+        "description": "Платформа для совместного обмена информацией о киберугрозах, основанная на принципах краудсорсинга..",
+        "accepts": ["ipv4", "ipv6", "url", "email", "domain"], /*ipv6???*/ /*phone,email*/
+        "baseUrl": "https://otx.alienvault.com",
+        "lookups": {
+            "ipv4": { "endpoint": "/indicator/ip/<?>" },
+            "ipv6": { "endpoint": "/indicator/ip/<?>" },
+            "domain": { "endpoint": "/indicator/domain/<?>" },
+            "url": { "endpoint": "/indicator/url/<?>" },
+            "hash_sha256": { "endpoint": "/indicator/file/<?>" }
+        }
+    },
     "ipqualityscore": {
         "title": "IPQualityScore",
         "group": "reputation",
@@ -129,17 +188,6 @@ export const RESOURCES = {
         "baseUrl": "https://viz.greynoise.io",
         "lookups": {
             "ipv4": { "endpoint": "/ip/<?>" }
-        }
-    },
-    "crtsh": {
-        "title": "crt.sh",
-        "group": "infrastructure",
-        "description": "Веб-инструмент для поиска и анализа SSL/TLS-сертификатов, основанный на логах Certificate Transparency.",
-        "accepts": ["domain", "query"],
-        "baseUrl": "https://crt.sh",
-        "lookups": { 
-            "domain": { "endpoint": "/?q=<?>" },
-            "query": { "endpoint": "/?q=<?>" }
         }
     },
     "censys": {

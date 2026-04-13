@@ -14,7 +14,7 @@ function constructResources(entityType, entity) {
     // ```
     // <div class="columns is-centered">
     //     <div class="column is-10">
-    //         <h2 class="title">{title} <a href="{lookupUrl}">[LOOKUP ↗]</a></h2>
+    //         <h2 class="title"><a href="{baseUrl}">{title}</a> <a href="{lookupUrl}">[LOOKUP ↗]</a></h2>
     //         <p>Группа: {group}</p>
     //         <p>Принимает: {accepts}</p>
     //         <p>{description}</p>
@@ -33,7 +33,7 @@ function constructResources(entityType, entity) {
         tmp.innerHTML = `
             <div class="columns is-centered">
                 <div class="column is-10">
-                    <h2 class="title"><span>${resourceInfo.title}</span></h2>
+                    <h2 class="title"><a class="has-text-primary" target="_blank" href="${resourceInfo.baseUrl}">${resourceInfo.title}</a></h2>
                     <p>Группа: ${group}</p>
                     <p>Принимает: ${accepts}</p>
                     <p>${resourceInfo.description}</p>
@@ -75,7 +75,8 @@ function inputHandler(event) {
     const value = event.srcElement.value;
     if (!value) return;
 
-    const detectedEntity = detectEntity(value);
+    const [detectedEntity, cleanValue] = detectEntity(value);
+    console.log(detectedEntity, cleanValue);
     if (detectedEntity === undefined) {
         listikEntityInfo.textContent = "Мы не определили тип сущности :("
         return;
@@ -83,9 +84,21 @@ function inputHandler(event) {
 
     listikEntityInfo.textContent = `Сущность похожа на ${detectedEntity}`;
 
-    constructResources(detectedEntity, value);
+    constructResources(detectedEntity, cleanValue);
 
     console.log(event); // TODELETE
+}
+
+function getListikPlaceholder() {
+    const examples = ["google[.]com", "8.8.8.8", "hxxps://example.com", "8743b52063cd84097a65d1633f5c74f5"];
+    const template = "Type entity here. Example: <example>";
+
+    let idx = 0;
+
+    return () => {
+        return template.replace("<example>", examples[idx++ % examples.length])
+    };
+
 }
 
 export const ListikPage = {
@@ -125,6 +138,12 @@ export const ListikPage = {
     `,
     init: () => {
         document.getElementById("listik-input").addEventListener("change", inputHandler);
+        
+        // let listikPlaceholder = getListikPlaceholder();
+        // setInterval(() => {
+        //     document.getElementById("listik-input").placeholder = listikPlaceholder();
+        //     console.log("x");
+        // }, 2000);
     }
 };
 

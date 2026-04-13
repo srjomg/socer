@@ -13,12 +13,14 @@ export function detectEntity(str) {
 
     for ( let [entityType, detector] of Object.entries(DETECTORS) ) {
         if ( detector(cleanStr) === true) {
-            return entityType;
+            console.log(entityType, cleanStr);
+            return [entityType, cleanStr];
         }
     }
 
-    return undefined;
+    return [undefined, undefined];
 }
+
 
 function detectIPv4(str) {
     const parts = str.split(".");
@@ -105,6 +107,6 @@ function refang(str) {
     return str.replace(/\[at\]/, "@")
         .replace("hxxp://", "http://")
         .replace("hxxps://", "https://")
-        .replace(/\[[\.]\]/, "")
-        .replace(/\([\.]\)/, "");
+        .replace(/\[([\.])\]/, "$1")
+        .replace(/\(([\.])\)/, "$1");
 }
