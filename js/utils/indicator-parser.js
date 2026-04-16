@@ -107,6 +107,6 @@ function refang(str) {
     return str.replace(/\[at\]/, "@")
         .replace("hxxp://", "http://")
         .replace("hxxps://", "https://")
-        .replace(/\[([\.])\]/, "$1")
-        .replace(/\(([\.])\)/, "$1");
+        .replace(/\[([\.])\]/g, "$1")
+        .replace(/\(([\.])\)/g, "$1");
 }
