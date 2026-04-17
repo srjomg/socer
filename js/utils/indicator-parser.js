@@ -104,9 +104,8 @@ function detectDomain(str) {
 }
 
 function refang(str) {
-    return str.replace(/\[at\]/, "@")
+    return str.replace(/\[([\.])\]/g, "$1")
+        .replace(/\[at\]/, "@")
         .replace("hxxp://", "http://")
-        .replace("hxxps://", "https://")
-        .replace(/\[([\.])\]/g, "$1")
-        .replace(/\(([\.])\)/g, "$1");
+        .replace("hxxps://", "https://");
 }
